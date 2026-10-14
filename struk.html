@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block judul %}Struk{% endblock %}
+{% block isi %}
+<h2>TOKO ELEKTRONIK MAJU JAYA</h2>
+<p><strong>STRUK PEMBELIAN</strong></p>
+<hr>
+{% for i in s["items"] %}
+<p>
+  {{ i.nama }}<br>
+  {{ i.jumlah }} x {{ i.satuan|rp }} = {{ i.jml|rp }}
+</p>
+{% endfor %}
+<hr>
+<p>Total harga normal: {{ s.normal|rp }}</p>
+<p>Diskon produk: -{{ s.diskon|rp }}</p>
+<p>Promo ({{ s.kode }}): -{{ s.potongan|rp }}</p>
+<p><strong>TOTAL: {{ s.total|rp }}</strong></p>
+<p>Metode: {{ s.metode }}</p>
+{% if s.total_akhir != s.total %}<p>Total setelah bunga: {{ s.total_akhir|rp }}</p>{% endif %}
+<p>Ket: {{ s.ket }}</p>
+<hr>
+<p>Terima kasih sudah berbelanja!</p>
+<a href="{{ url_for('index') }}">Transaksi baru</a>
+<button onclick="window.print()">Cetak struk</button>
+{% endblock %}

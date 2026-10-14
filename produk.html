@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block judul %}Kasir{% endblock %}
+{% block isi %}
+
+<h2>Daftar barang</h2>
+<table>
+  <tr><th>Kode</th><th>Nama barang</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Harga akhir</th><th class="r">Stok</th><th>Beli</th></tr>
+  {% for p in produk %}
+  <tr>
+    <td>{{ p.kode }}</td>
+    <td>{{ p.nama }}</td>
+    <td class="r">{{ p.harga|rp }}</td>
+    <td class="r">{{ p.diskon }}%</td>
+    <td class="r">{{ (p.harga * (100 - p.diskon) / 100)|rp }}</td>
+    <td class="r">{{ p.stok }}</td>
+    <td>
+      {% if p.stok > 0 %}
+      <form method="post" action="{{ url_for('tambah_ke_keranjang') }}">
+        <input type="hidden" name="kode" value="{{ p.kode }}">
+        <input type="number" name="jumlah" value="1" min="1" max="{{ p.stok }}" style="width:60px">
+        <button>Tambah</button>
+      </form>
+      {% else %}Habis{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h2>Keranjang belanja</h2>
+{% if not rows %}
+<p>Keranjang masih kosong.</p>
+{% else %}
+<table>
+  <tr><th>No</th><th>Nama barang</th><th class="r">Harga</th><th class="r">Diskon</th><th class="r">Qty</th><th class="r">Jumlah</th><th></th></tr>
+  {% for r in rows %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ r.p.nama }}</td>
+    <td class="r">{{ r.p.harga|rp }}</td>
+    <td class="r">{{ r.p.diskon }}%</td>
+    <td class="r">{{ r.jumlah }}</td>
+    <td class="r">{{ r.jml|rp }}</td>
+    <td>
+      <form method="post" action="{{ url_for('hapus_dari_keranjang', kode=r.p.kode) }}">
+        <button>Hapus</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<div class="box">
+  <form method="post" action="{{ url_for('pakai_promo') }}">
+    Kode promo:
+    <input name="kode" value="{{ kode_promo or '' }}" placeholder="HEMAT10" autocomplete="off">
+    <button>Pakai promo</button>
+    <small>(kosongkan lalu klik tombol untuk melepas promo)</small>
+  </form>
+</div>
+
+<div class="box">
+  <p>Total harga normal: {{ normal|rp }}</p>
+  <p>Total diskon produk: -{{ diskon|rp }}</p>
+  <p>Subtotal: {{ subtotal|rp }}</p>
+  {% if kode_promo %}<p>Promo {{ kode_promo }}: -{{ potongan|rp }}</p>{% endif %}
+  <p><strong>TOTAL: {{ total|rp }}</strong></p>
+</div>
+
+<h2>Pembayaran</h2>
+<form method="post" action="{{ url_for('checkout') }}" class="box">
+  <p>
+    <label><input type="radio" name="metode" value="tunai" required> Tunai</label>
+    &nbsp; Uang diterima: <input type="number" name="uang" min="0">
+  </p>
+  <p><label><input type="radio" name="metode" value="transfer"> Transfer bank</label></p>
+  <p><label><input type="radio" name="metode" value="ewallet"> E-Wallet (OVO/GoPay/DANA)</label></p>
+  <p>
+    <label>
+      <input type="radio" name="metode" value="cicilan" {% if total < min_cicilan %}disabled{% endif %}>
+      Cicilan kartu kredit (minimal {{ min_cicilan|rp }})
+    </label>
+    {% if total >= min_cicilan %}
+    <select name="tenor">
+      {% for tenor, bunga in cicilan_opsi.items() %}
+      <option value="{{ tenor }}">{{ tenor }} bulan, bunga {{ bunga }}%/bulan, {{ ((total + total * bunga / 100 * tenor) / tenor)|rp }}/bulan</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+  </p>
+  <button>Bayar sekarang</button>
+</form>
+
+<form method="post" action="{{ url_for('kosongkan_keranjang') }}">
+  <button>Kosongkan keranjang</button>
+</form>
+{% endif %}
+
+<h2>Tambah produk baru (admin)</h2>
+<form method="post" action="{{ url_for('tambah_produk_baru') }}" class="box">
+  <p>Kode barang<br><input name="kode" placeholder="E007" required></p>
+  <p>Nama barang<br><input name="nama" required></p>
+  <p>Harga (Rp)<br><input type="number" name="harga" min="1" required></p>
+  <p>Diskon (0-100%)<br><input type="number" name="diskon" min="0" max="100" value="0" required></p>
+  <p>Stok<br><input type="number" name="stok" min="0" value="0" required></p>
+  <button>Simpan produk</button>
+</form>
+
+{% endblock %}

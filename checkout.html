@@ -1,0 +1,41 @@
+checkout.htlm 
+
+{% extends "base.html" %}
+{% block judul %}Pembayaran{% endblock %}
+{% block isi %}
+<h1>Pembayaran</h1>
+<p>Subtotal: {{ r.subtotal|rp }}</p>
+{% if r.kode %}<p>Promo {{ r.kode }}: -{{ r.potongan|rp }}</p>{% endif %}
+<p><strong>Total yang harus dibayar: {{ r.total|rp }}</strong></p>
+
+<form method="post">
+  <h3>Metode pembayaran</h3>
+
+  <p>
+    <label><input type="radio" name="metode" value="tunai" required> Tunai</label><br>
+    Uang diterima: <input type="number" name="bayar" min="0">
+  </p>
+
+  <p><label><input type="radio" name="metode" value="transfer"> Transfer bank</label></p>
+
+  <p><label><input type="radio" name="metode" value="ewallet"> E-Wallet (OVO/GoPay/DANA)</label></p>
+
+  <p>
+    <label>
+      <input type="radio" name="metode" value="cicilan" {% if r.total < min_cicilan %}disabled{% endif %}>
+      Cicilan kartu kredit (minimal {{ min_cicilan|rp }})
+    </label>
+    {% if r.total >= min_cicilan %}
+    <br>
+    <select name="tenor">
+      {% for o in opsi %}
+      <option value="{{ o.tenor }}">{{ o.tenor }} bulan, bunga {{ o.bunga }}%/bulan, {{ o.per_bulan|rp }}/bulan</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+  </p>
+
+  <button>Bayar sekarang</button>
+  <a href="{{ url_for('lihat_keranjang') }}">Kembali</a>
+</form>
+{% endblock %}

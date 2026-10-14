@@ -1,0 +1,24 @@
+admin.html
+
+{% extends "base.html" %}
+{% block judul %}Daftar barang{% endblock %}
+{% block isi %}
+<h1>Daftar barang</h1>
+<table>
+  <tr><th>Kode</th><th>Nama</th><th>Harga</th><th>Beli</th></tr>
+  {% for p in produk %}
+  <tr>
+    <td>{{ p.kode }}</td>
+    <td>{{ p.nama }}</td>
+    <td>{{ p.harga|rp }}</td>
+    <td>
+      <form method="post" action="{{ url_for('tambah_ke_keranjang') }}">
+        <input type="hidden" name="kode" value="{{ p.kode }}">
+        <input type="number" name="jumlah" value="1" min="1">
+        <button>Tambah</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

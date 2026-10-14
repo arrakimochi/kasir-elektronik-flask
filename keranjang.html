@@ -1,0 +1,49 @@
+keranjang.html
+{% extends "base.html" %}
+{% block judul %}Keranjang{% endblock %}
+{% block isi %}
+<h1>Keranjang belanja</h1>
+
+{% if not r["items"] %}
+<p>Keranjang masih kosong.</p>
+<a href="{{ url_for('index') }}">Pilih barang</a>
+{% else %}
+<table>
+  <tr><th>No</th><th>Nama barang</th><th>Harga</th><th>Diskon</th><th>Qty</th><th>Jumlah</th><th></th></tr>
+  {% for i in r["items"] %}
+  <tr>
+    <td>{{ loop.index }}</td>
+    <td>{{ i.produk.nama }}</td>
+    <td>{{ i.produk.harga|rp }}</td>
+    <td>{{ i.produk.diskon }}%</td>
+    <td>{{ i.jumlah }}</td>
+    <td>{{ i.jumlah_harga|rp }}</td>
+    <td>
+      <form method="post" action="{{ url_for('hapus_dari_keranjang', kode=i.produk.kode) }}">
+        <button>Hapus</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Kode promo</h3>
+<form method="post" action="{{ url_for('pakai_promo') }}">
+  <input name="kode" value="{{ r.kode or '' }}" placeholder="HEMAT10" autocomplete="off">
+  <button>Pakai promo</button>
+  {% if r.kode %}<button name="aksi" value="hapus">Lepas</button>{% endif %}
+</form>
+
+<h3>Ringkasan</h3>
+<p>Total harga normal: {{ r.normal|rp }}</p>
+<p>Total diskon produk: -{{ r.diskon|rp }}</p>
+<p>Subtotal: {{ r.subtotal|rp }}</p>
+{% if r.kode %}<p>Promo {{ r.kode }}: -{{ r.potongan|rp }}</p>{% endif %}
+<p><strong>Total: {{ r.total|rp }}</strong></p>
+
+<a href="{{ url_for('checkout') }}">Lanjut ke pembayaran</a>
+<form method="post" action="{{ url_for('kosongkan_keranjang') }}">
+  <button>Kosongkan keranjang</button>
+</form>
+{% endif %}
+{% endblock %}
